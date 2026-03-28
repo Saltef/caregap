@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Generated local data downloads
+data/raw/

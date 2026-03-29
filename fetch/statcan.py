@@ -13,6 +13,7 @@ META_FILE = ROOT / "data" / "metadata.json"
 for d in [RAW_DIR, OUT_DIR]: d.mkdir(parents=True, exist_ok=True)
 
 TABLE_POP_HR = "17100142"
+INPUT_PROCESSED = ROOT / "inputData" / "processed data"
 LHIN_HR_MAP = {
     "Erie St. Clair": "3540", "South West": "3530", "Waterloo Wellington": "3520",
     "Hamilton Niagara Haldimand Brant": "3510", "Central West": "3560",
@@ -30,6 +31,64 @@ STATCAN_AGE_MAP = {
     "85 years and over": "85+"
 }
 
+FALLBACK_AGE_SHARES = {
+    "0–14": 0.16,
+    "15–24": 0.12,
+    "25–44": 0.26,
+    "45–64": 0.26,
+    "65–74": 0.11,
+    "75–84": 0.06,
+    "85+": 0.03,
+}
+
+
+def _first_col(df: pd.DataFrame, candidates: list[str]) -> str | None:
+    for col in candidates:
+        if col in df.columns:
+            return col
+    return None
+
+
+def _fallback_population_by_lhin(out_path: Path) -> pd.DataFrame:
+    providers_path = INPUT_PROCESSED / "providers_by_lhin.csv"
+    coords_path = ROOT / "data" / "static" / "lhin_coords.csv"
+
+    if not providers_path.exists():
+        raise FileNotFoundError(f"Fallback source missing: {providers_path}")
+
+    providers = pd.read_csv(providers_path)
+    if "lhin" not in providers.columns or "population" not in providers.columns:
+        raise ValueError("Fallback providers file must include 'lhin' and 'population' columns")
+
+    lhin_pop = (
+        providers[["lhin", "population"]]
+        .dropna()
+        .drop_duplicates(subset=["lhin"])
+        .rename(columns={"lhin": "LHIN"})
+    )
+
+    rows = []
+    for _, row in lhin_pop.iterrows():
+        for age_group, share in FALLBACK_AGE_SHARES.items():
+            rows.append(
+                {
+                    "LHIN": row["LHIN"],
+                    "year": 2024,
+                    "age_group": age_group,
+                    "population": int(round(float(row["population"]) * share)),
+                }
+            )
+
+    out = pd.DataFrame(rows)
+    if coords_path.exists():
+        coords = pd.read_csv(coords_path)
+        if {"lhin_name", "lat", "lon"}.issubset(coords.columns):
+            out = out.merge(coords, left_on="LHIN", right_on="lhin_name", how="left")
+
+    out.to_csv(out_path, index=False)
+    log.warning("StatsCan schema mismatch detected; wrote fallback data to %s", out_path)
+    return out
+
 def _download_csv(table_id):
     api_url = f"https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/{table_id}/en"
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -43,24 +102,35 @@ def fetch_population_by_lhin():
     log.info("Starting LHIN Population Fetch...")
     df = _download_csv(TABLE_POP_HR)
     df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
-    
-    # We ignore the 'sex' column entirely and let the groupby handle the totals
-    age_col = next(c for c in df.columns if "age" in c)
+
+    # Older table versions included explicit age columns; if absent, use local fallback.
+    age_col = next((c for c in df.columns if "age" in c), None)
+    if age_col is None:
+        return _fallback_population_by_lhin(OUT_DIR / "population_by_age_lhin.csv")
+
     df["mapped_age"] = df[age_col].map(STATCAN_AGE_MAP)
-    df["year"] = pd.to_numeric(df["ref_date"].astype(str).str[:4])
-    
+
+    ref_date_col = _first_col(df, ["ref_date", "reference_period"])
+    if ref_date_col is None:
+        return _fallback_population_by_lhin(OUT_DIR / "population_by_age_lhin.csv")
+    df["year"] = pd.to_numeric(df[ref_date_col].astype(str).str[:4], errors="coerce")
+
     inv_map = {v: k for k, v in LHIN_HR_MAP.items()}
-    dguid_col = next(c for c in df.columns if "dguid" in c)
+    dguid_col = next((c for c in df.columns if "dguid" in c), None)
+    if dguid_col is None:
+        return _fallback_population_by_lhin(OUT_DIR / "population_by_age_lhin.csv")
     df["LHIN"] = df[dguid_col].astype(str).str[-4:].map(inv_map)
-    
+
     # Filter for valid rows
     df = df[df["mapped_age"].notna() & df["LHIN"].notna()]
-    val_col = next(c for c in df.columns if c in ["value", "val", "population"])
+    val_col = _first_col(df, ["value", "val", "population"])
+    if val_col is None:
+        return _fallback_population_by_lhin(OUT_DIR / "population_by_age_lhin.csv")
     
     # Aggregate: Summing everything (including all sexes) into one LHIN/Age/Year bucket
     out = df.groupby(["LHIN", "year", "mapped_age"], as_index=False)[val_col].sum()
     out.columns = ["LHIN", "year", "age_group", "population"]
-    
+
     out_path = OUT_DIR / "population_by_age_lhin.csv"
     out.to_csv(out_path, index=False)
     log.info(f"✅ SUCCESS: File saved to {out_path}")

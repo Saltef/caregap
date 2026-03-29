@@ -38,14 +38,23 @@ def get_projected_lhin_map(condition_name, target_year=2024):
     # 5. Create Regional Summary (Age Buckets)
     # The groups created by your fetcher: '0–14', '15–24', '25–44', '45–64', '65–74', '75–84', '85+'
     senior_groups = ['65–74', '75–84', '85+']
-    
-    def calc_group_stats(group):
-        return pd.Series({
-            'pop_total': group['population'].sum(),
-            'pop_65_plus': group[group['age_group'].isin(senior_groups)]['population'].sum()
-        })
+    df_year['is_senior'] = df_year['age_group'].isin(senior_groups)
+    df_year['senior_population'] = np.where(df_year['is_senior'], df_year['population'], 0)
 
-    lhin_summary = df_year.groupby('LHIN', group_keys=False).apply(calc_group_stats).reset_index()
+    agg_spec = {
+        'population': 'sum',
+        'senior_population': 'sum',
+    }
+    if 'lat' in df_year.columns:
+        agg_spec['lat'] = 'first'
+    if 'lon' in df_year.columns:
+        agg_spec['lon'] = 'first'
+
+    lhin_summary = (
+        df_year.groupby('LHIN', as_index=False)
+        .agg(agg_spec)
+        .rename(columns={'population': 'pop_total', 'senior_population': 'pop_65_plus'})
+    )
 
     # 6. Apply Proxy Weighting
     senior_weighted = ['COPD', 'Stroke', 'Pneumonia', 'Heart Failure']
@@ -60,4 +69,4 @@ def get_projected_lhin_map(condition_name, target_year=2024):
     lhin_summary['predicted_admissions'] = lhin_summary['weight'] * cond_stats['admissions']
     lhin_summary['predicted_cost'] = lhin_summary['weight'] * cond_stats['total_cost']
     
-    return lhin_summary
+    return lhin_summary.drop(columns=['is_senior'], errors='ignore')

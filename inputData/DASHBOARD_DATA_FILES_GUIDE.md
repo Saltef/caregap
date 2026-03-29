@@ -67,7 +67,7 @@ Plus full **model results** for detailed scenario analysis.
 **Rows:** 8 (one per condition)
 **Purpose:** What's happening NOW (2024 baseline state)
 
-### Schema (22 columns)
+### Schema (29 columns)
 
 #### Core Metrics (9 columns)
 | Column | Type | Description | Example |
@@ -107,6 +107,17 @@ Plus full **model results** for detailed scenario analysis.
 | `wait_time_confidence`           | String | Data confidence level          | "High", "Medium", "None"                    |
 | `wait_time_data_source`          | String | Data source                    | "Fraser Institute 2025 - Internal Medicine" |
 
+#### Age Demographics (7 columns) ← **NEW March 28, 2026**
+| Column | Type | Description | Example |
+|--------|------|-------------|---------|
+| `pct_ed_visits_under_18` | Float | % of ED visits under age 18 | 15.0% |
+| `pct_ed_visits_18_64` | Float | % of ED visits age 18-64 | 25.0% |
+| `pct_ed_visits_65plus` | Float | % of ED visits age 65+ | 60.0% |
+| `median_age_ed_patients` | Float | Median age of ED patients | 72.0 years |
+| `high_utilizer_age_group` | String | Peak utilization age group | "85+", "25-34" |
+| `age_data_confidence` | String | Age data confidence level | "High", "Medium" |
+| `age_data_source` | String | Age data source | "CIHI age distribution + clinical epidemiology" |
+
 ### Data Sources
 
 - **ED visits & admissions:** CIHI ED Supplementary Data (2003-2021) + extrapolation to 2024
@@ -114,6 +125,7 @@ Plus full **model results** for detailed scenario analysis.
 - **Avoidability %:** AHRQ Prevention Quality Indicators (PQI) framework
 - **Physician capacity:** OMA 2024 Census + specialty matching weights
 - **Wait times:** Fraser Institute "Waiting Your Turn 2025" survey
+- **Age demographics:** CIHI ED age distribution (2021-2022, 28M visits) + clinical epidemiology
 
 ### Key Conclusions
 
@@ -133,12 +145,23 @@ Plus full **model results** for detailed scenario analysis.
 - **Wait times tripled since 1993** (+313%)
 - **7 of 8 conditions validated** (only Psychiatry missing)
 
+**Age Demographics:**
+- **Seniors are over-represented:** 46.4% of ED patients are 65+ vs 17.7% of Ontario population (2.6x)
+- **Oldest populations:** Stroke (median 76, 84% are 65+), Heart Failure (median 75, 79% are 65+), COPD (median 73, 74.5% are 65+)
+- **Youngest population:** Mental Health (median 32, 75% are 18-64)
+- **High utilizer age groups:** Vary by condition (e.g., Mental Health peaks at 25-34, Stroke peaks at 80-84)
+
 ### Dashboard Use
 
 - **Current burden heatmap:** Show ED visits and costs by condition
 - **Avoidability analysis:** Filter by avoidability % to prioritize interventions
 - **Wait time visualization:** Display specialist access barriers by condition
-- **Condition comparison:** Compare volume, cost, and avoidability side-by-side
+- **Age demographics analysis:**
+  - Stacked bar charts showing age distribution (<18, 18-64, 65+) by condition
+  - Median age comparison across conditions
+  - Age-specific intervention targeting (e.g., pediatric vs geriatric focus)
+  - Over-representation analysis (compare ED demographics to population)
+- **Condition comparison:** Compare volume, cost, avoidability, and age demographics side-by-side
 
 ---
 
@@ -395,11 +418,13 @@ Plus full **model results** for detailed scenario analysis.
 - ✅ Heart Failure growth rate (18-year AMI proxy)
 - ✅ Admission costs (CIHI Patient Cost Estimator 2017-2022)
 - ✅ Fraser Institute wait times (7 of 8 conditions validated)
+- ✅ Age demographics for 4 conditions (Pneumonia, Heart Failure, COPD, Stroke - well-documented clinical patterns)
 
 ### Medium Confidence Data (60-75%)
 - ⚠️ COPD, CKD, Stroke growth rates (5-year hospitalization, COVID-adjusted)
 - ⚠️ Physician capacity allocation by specialty (clinical practice patterns)
 - ⚠️ LHIN geographic distribution (proportional, not real data)
+- ⚠️ Age demographics for 4 conditions (Mental Health, CKD, Type 2 Diabetes, Hypertension - clinical epidemiology estimates)
 
 ### Low Confidence Data (30-40%)
 - ⚠️ Mental Health growth rate (estimated from crisis trends)
@@ -412,6 +437,9 @@ Plus full **model results** for detailed scenario analysis.
 2. **Mental Health wait times missing:** Psychiatry not included in Fraser Institute survey (1 of 8 conditions)
 3. **LHIN results use proportional distribution:** Not true LHIN-level admission data
 4. **Gap ratio analysis invalid:** "200 cases per physician" assumption off by 10-50x
+5. **Age demographics are estimates:** Based on clinical epidemiology patterns, not patient-level CIHI ED data
+   - High confidence (4 conditions): Pneumonia, Heart Failure, COPD, Stroke
+   - Medium confidence (4 conditions): Mental Health, CKD, Type 2 Diabetes, Hypertension
 
 ---
 
@@ -431,11 +459,12 @@ Plus full **model results** for detailed scenario analysis.
 4. **LHIN data** is proportional - do not use for policy decisions
 
 ### For Presenters:
-1. **Lead with Layer 2** - $40.1M avoidable costs
-2. **Show Layer 3 trends** - disease burden growing +26%
-3. **Present Layer 4 ROI** - 8-9x return on investment
-4. **Acknowledge limitations** - gap ratios invalid, LHIN data proportional
-5. **Highlight Fraser validation** - 10.7 week wait times prove access constraints
+1. **Lead with Layer 2** - $40.1M avoidable costs by 2034
+2. **Show age demographics** - seniors (65+) represent 46.4% of ED patients but only 17.7% of population (2.6x over-representation)
+3. **Show Layer 3 trends** - disease burden growing +26%
+4. **Present Layer 4 ROI** - 8-9x return on investment
+5. **Highlight Fraser validation** - 10.7 week wait times prove access constraints (tripled since 1993)
+6. **Acknowledge limitations** - gap ratios invalid, LHIN data proportional, age demographics are estimates
 
 ---
 
@@ -445,9 +474,9 @@ Plus full **model results** for detailed scenario analysis.
 ```
 dashboard_data/
 ├── layer1_population_demographics.csv    (1 row)
-├── layer2_current_burden.csv             (8 rows - HAS WAIT TIMES)
-├── layer3_predictive_trajectory.csv      (24 rows)
-└── layer4_cost_analysis.csv              (8 rows)
+├── layer2_current_burden.csv             (8 rows, 29 columns - HAS WAIT TIMES + AGE DEMOGRAPHICS)
+├── layer3_predictive_trajectory.csv      (24 rows, 10 columns)
+└── layer4_cost_analysis.csv              (8 rows, 14 columns)
 ```
 
 **Model Results:**
@@ -476,5 +505,5 @@ DASHBOARD_FILES_CHECKLIST.md                  (File transfer guide)
 ---
 
 **Last Updated:** March 28, 2026
-**Version:** 2.0 (includes Fraser Institute wait times validation)
+**Version:** 2.1 (includes Fraser Institute wait times + age demographics)
 **Contact:** Imran Yussuff

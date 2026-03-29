@@ -1,40 +1,58 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from utils.data_loader import get_age_proxy_data
+from utils.data_loader import get_projected_lhin_map
 
-st.set_page_config(page_title="Ontario Health Intelligence", layout="wide")
+st.set_page_config(page_title="Ontario Health Intel", layout="wide")
 
-# Sidebar
-st.sidebar.title("Configuration")
+# --- SIDEBAR FILTERS ---
+st.sidebar.title("Forecast Controls")
 df_burden = pd.read_csv("inputData/layer2_current_burden.csv")
-condition = st.sidebar.selectbox("Select Health Condition", df_burden['condition'].unique())
+condition = st.sidebar.selectbox("Select Condition", df_burden['condition'].unique())
 
-# Load Proxy Data
-df_mapped = get_age_proxy_data(condition)
+# Pull years from processed StatCan data
+df_pop = pd.read_csv("data/processed/population_by_age_lhin.csv")
+available_years = sorted(df_pop['year'].unique())
+target_year = st.sidebar.select_slider("Select Target Year", options=available_years)
 
-# --- UI Layout ---
-st.title(f"📍 {condition}: Regional Burden Forecast")
-st.caption("Baseline: Layer 2 | Population Proxy: StatCan Table 17-10-0142")
+# --- LOAD DATA ---
+mapped_df = get_projected_lhin_map(condition, target_year)
 
-m1, m2 = st.columns([2, 1])
+# --- MAIN DASHBOARD ---
+st.title(f"🏥 {condition} Regional Heatmap ({target_year})")
+st.write(f"Showing the projected burden based on **StatCan 2026** demographic shifts.")
 
-with m1:
-    # Bar Chart acting as the Regional Heatmap
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    # HEATMAP VISUALIZATION
+    # In a full production app, you would add geojson=lhin_geojson_url here
     fig = px.bar(
-        df_mapped.sort_values('predicted_admissions', ascending=False),
-        x='LHIN', 
-        y='predicted_admissions',
-        color='predicted_cost',
-        title=f"Estimated {condition} Admissions by LHIN",
-        color_continuous_scale='Turbo'
+        mapped_df.sort_values('predicted_admissions', ascending=True),
+        x='predicted_admissions', 
+        y='LHIN',
+        orientation='h',
+        color='predicted_admissions',
+        title=f"Heat Distribution: {condition} Admissions",
+        color_continuous_scale='Reds',
+        template='plotly_dark'
     )
+    fig.update_layout(showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
 
-with m2:
-    st.subheader("Data Insights")
-    top_lhin = df_mapped.sort_values('predicted_admissions', ascending=False).iloc[0]
-    st.metric("Highest Burden Region", top_lhin['LHIN'])
-    st.write(f"This region accounts for {top_lhin['weight']:.1%} of the provincial age-weighted risk.")
+with col2:
+    st.subheader("Provincial Summary")
+    total_adm = mapped_df['predicted_admissions'].sum()
+    total_cost = mapped_df['predicted_cost'].sum()
     
-    st.dataframe(df_mapped[['LHIN', 'predicted_admissions', 'predicted_cost']])
+    st.metric("Total Admissions", f"{total_adm:,.0f}")
+    st.metric("Total Estimated Cost", f"${total_cost/1e6:.1f}M")
+    
+    st.write("---")
+    st.subheader("Top 3 High-Impact Regions")
+    top_3 = mapped_df.nlargest(3, 'predicted_admissions')
+    for idx, row in top_3.iterrows():
+        st.write(f"**{row['LHIN']}**: {row['predicted_admissions']:,.0f} cases")
+
+st.divider()
+st.dataframe(mapped_df[['LHIN', 'predicted_admissions', 'predicted_cost']])

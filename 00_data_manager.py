@@ -1,45 +1,98 @@
-"""pages/00_data_manager.py — upload and preview source files."""
-
 import streamlit as st
 import pandas as pd
 from pathlib import Path
 
 st.set_page_config(page_title="Data Manager", layout="wide")
-st.markdown("## ⚙️ Data Manager")
-st.caption("Upload replacement source files or verify what's currently loaded.")
 
+# Custom CSS for the "Source Cards" and badges seen in your snippet
+st.markdown("""
+<style>
+    .source-card {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+    .source-title { color: #58a6ff; font-weight: 600; font-size: 1.1rem; }
+    .source-meta { color: #8b949e; font-size: 0.85rem; }
+    .badge {
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .badge-missing { background: #490202; color: #ff7b72; border: 1px solid #6e1010; }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("## ⚙️ Data Manager")
+st.caption("Manage Ontario Health Intelligence datasets (Layers 1-4).")
+
+# Setup Directories
 INPUT_DIR = Path("inputData")
 INPUT_DIR.mkdir(exist_ok=True)
 
+# Define the mapping based on the datasets you provided
 FILE_MAP = {
-    "Layer 2 — Current Burden":         "layer2_current_burden.csv",
-    "Layer 3 — Predictive Trajectory":  "layer3_predictive_trajectory.csv",
-    "Layer 4 — Cost Analysis":          "layer4_cost_analysis.csv",
+    "Layer 1 — Population Demographics": "layer1_population_demographics.csv",
+    "Layer 2 — Current Burden":           "layer2_current_burden.csv",
+    "Layer 3 — Predictive Trajectory":   "layer3_predictive_trajectory.csv",
+    "Layer 4 — Cost Analysis":           "layer4_cost_analysis.csv",
 }
 
+# --- PREVIEW & UPLOAD SECTION ---
 for label, filename in FILE_MAP.items():
     with st.expander(f"**{label}** — `{filename}`"):
         dest = INPUT_DIR / filename
+        
         if dest.exists():
-            df = pd.read_csv(dest)
-            st.success(f"✅ {len(df):,} rows · {len(df.columns)} columns")
-            st.dataframe(df.head(5), use_container_width=True)
+            try:
+                df = pd.read_csv(dest)
+                st.success(f"✅ {len(df):,} rows loaded successfully.")
+                
+                # Dynamic info based on your specific columns
+                if "condition" in df.columns:
+                    unique_items = df["condition"].unique()
+                    st.info(f"Conditions found: {', '.join(unique_items)}")
+                
+                st.dataframe(df, use_container_width=True)
+            except Exception as e:
+                st.error(f"Error reading CSV: {e}")
         else:
-            st.warning("⚠️ File not found in `inputData/`")
+            st.warning(f"⚠️ {filename} is missing from `inputData/`")
 
         uploaded = st.file_uploader(
-            f"Upload new `{filename}`", type=["csv"], key=filename
+            f"Replace {filename}", type=["csv"], key=filename
         )
         if uploaded:
-            dest.write_bytes(uploaded.read())
-            st.success("Saved. Reload the page to preview.")
+            # Load to verify structure before saving
+            test_df = pd.read_csv(uploaded)
+            dest.write_bytes(uploaded.getvalue())
+            st.success(f"Uploaded {filename} with {len(test_df)} rows. Please refresh.")
+            if st.button("Refresh Page", key=f"btn_{filename}"):
+                st.rerun()
 
 st.divider()
-st.markdown("""
-**Layer 1 — Population Demographics** is generated from Statistics Canada.
-Run the fetcher from your terminal:
-```bash
-python -m fetch.statcan
-```
-This writes `inputData/layer1_population_demographics.csv` and will unlock the **L1 Population & Services** page.
-""")
+
+# --- AUTO-FETCH LOGIC (StatCan) ---
+st.markdown("### 📡 External Data Sync")
+col_auto, col_manual = st.columns([1, 1], gap="large")
+
+with col_auto:
+    st.markdown("#### Statistics Canada (Layer 1)")
+    if st.button("🔄 Fetch Latest StatCan Data", type="primary"):
+        # This assumes you have a fetch module as referenced in your snippet
+        try:
+            from fetch.statcan import fetch_all
+            with st.spinner("Accessing StatCan API..."):
+                fetch_all()
+                st.success("Layer 1 updated.")
+                st.rerun()
+        except ImportError:
+            st.error("Fetcher module `fetch.statcan` not found.")
+
+with col_manual:
+    st.markdown("#### CIHI Manual Integration (Layer 2)")
+    st.info("Upload DAD/NACRS exports to update hospital burden metrics.")
+    # Placeholder for your cihi_loader.py logic

@@ -32,6 +32,14 @@ INPUT_DIR = ROOT / "inputData"
 PROCESSED_DIR = ROOT / "data" / "processed"
 STATIC_DIR = ROOT / "data" / "static"
 
+
+def _read_csv_first_available(candidates: list[Path], key: str) -> pd.DataFrame:
+    for path in candidates:
+        if path.exists():
+            return pd.read_csv(path)
+    searched = "\n".join(f"- {p}" for p in candidates)
+    raise FileNotFoundError(f"Missing required dataset '{key}'. Searched:\n{searched}")
+
 AGE_GROUP_UNDER18 = ["0–14", "15–24"]
 AGE_GROUP_18_64 = ["15–24", "25–44", "45–64"]
 AGE_GROUP_65PLUS = ["65–74", "75–84", "85+"]
@@ -53,14 +61,57 @@ CONDITION_AGE_PROFILES = {
 @st.cache_data
 def load_all_data() -> dict[str, pd.DataFrame]:
     return {
-        "layer1": pd.read_csv(INPUT_DIR / "layer1_population_demographics.csv"),
-        "layer2": pd.read_csv(INPUT_DIR / "layer2_current_burden.csv"),
-        "layer3": pd.read_csv(INPUT_DIR / "layer3_predictive_trajectory.csv"),
-        "layer4": pd.read_csv(INPUT_DIR / "layer4_cost_analysis.csv"),
-        "pop_age_lhin": pd.read_csv(PROCESSED_DIR / "population_by_age_lhin.csv"),
-        "pop_proj": pd.read_csv(PROCESSED_DIR / "population_projections.csv"),
-        "lhin_coords": pd.read_csv(STATIC_DIR / "lhin_coords.csv"),
-        "providers": pd.read_csv(INPUT_DIR / "processed data" / "providers_by_lhin.csv"),
+        "layer1": _read_csv_first_available(
+            [
+                INPUT_DIR / "layer1_population_demographics.csv",
+            ],
+            "layer1",
+        ),
+        "layer2": _read_csv_first_available(
+            [
+                INPUT_DIR / "layer2_current_burden.csv",
+            ],
+            "layer2",
+        ),
+        "layer3": _read_csv_first_available(
+            [
+                INPUT_DIR / "layer3_predictive_trajectory.csv",
+            ],
+            "layer3",
+        ),
+        "layer4": _read_csv_first_available(
+            [
+                INPUT_DIR / "layer4_cost_analysis.csv",
+            ],
+            "layer4",
+        ),
+        "pop_age_lhin": _read_csv_first_available(
+            [
+                INPUT_DIR / "processed data" / "population_by_age_lhin.csv",
+                PROCESSED_DIR / "population_by_age_lhin.csv",
+            ],
+            "pop_age_lhin",
+        ),
+        "pop_proj": _read_csv_first_available(
+            [
+                INPUT_DIR / "processed data" / "population_projections.csv",
+                PROCESSED_DIR / "population_projections.csv",
+            ],
+            "pop_proj",
+        ),
+        "lhin_coords": _read_csv_first_available(
+            [
+                STATIC_DIR / "lhin_coords.csv",
+            ],
+            "lhin_coords",
+        ),
+        "providers": _read_csv_first_available(
+            [
+                INPUT_DIR / "processed data" / "providers_by_lhin.csv",
+                PROCESSED_DIR / "providers_by_lhin.csv",
+            ],
+            "providers",
+        ),
     }
 
 
@@ -520,7 +571,16 @@ def build_trajectory(
     return pd.DataFrame(rows)
 
 
-data = load_all_data()
+try:
+    data = load_all_data()
+except FileNotFoundError as exc:
+    st.error(
+        "Required data files are missing for this deployment. "
+        "Ensure inputData files are committed to GitHub, or generate processed files during deploy."
+    )
+    st.code(str(exc))
+    st.stop()
+
 pop_proj_ext = build_statscan_projection_to_2050(data["pop_proj"], end_year=2050)
 conditions = sorted(data["layer2"]["condition"].dropna().unique().tolist())
 year_options = sorted({int(y) for y in pop_proj_ext["year"].dropna().unique().tolist()})

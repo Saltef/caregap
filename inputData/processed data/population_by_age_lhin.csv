@@ -1,0 +1,99 @@
+LHIN,year,age_group,population,lhin_name,lat,lon
+Erie St. Clair,2024,0–14,104000,Erie St. Clair,42.5,-82.2
+Erie St. Clair,2024,15–24,78000,Erie St. Clair,42.5,-82.2
+Erie St. Clair,2024,25–44,169000,Erie St. Clair,42.5,-82.2
+Erie St. Clair,2024,45–64,169000,Erie St. Clair,42.5,-82.2
+Erie St. Clair,2024,65–74,71500,Erie St. Clair,42.5,-82.2
+Erie St. Clair,2024,75–84,39000,Erie St. Clair,42.5,-82.2
+Erie St. Clair,2024,85+,19500,Erie St. Clair,42.5,-82.2
+South West,2024,0–14,151200,South West,43.0,-81.2
+South West,2024,15–24,113400,South West,43.0,-81.2
+South West,2024,25–44,245700,South West,43.0,-81.2
+South West,2024,45–64,245700,South West,43.0,-81.2
+South West,2024,65–74,103950,South West,43.0,-81.2
+South West,2024,75–84,56700,South West,43.0,-81.2
+South West,2024,85+,28350,South West,43.0,-81.2
+Waterloo Wellington,2024,0–14,124800,Waterloo Wellington,43.5,-80.5
+Waterloo Wellington,2024,15–24,93600,Waterloo Wellington,43.5,-80.5
+Waterloo Wellington,2024,25–44,202800,Waterloo Wellington,43.5,-80.5
+Waterloo Wellington,2024,45–64,202800,Waterloo Wellington,43.5,-80.5
+Waterloo Wellington,2024,65–74,85800,Waterloo Wellington,43.5,-80.5
+Waterloo Wellington,2024,75–84,46800,Waterloo Wellington,43.5,-80.5
+Waterloo Wellington,2024,85+,23400,Waterloo Wellington,43.5,-80.5
+Hamilton Niagara Haldimand Brant,2024,0–14,232000,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Hamilton Niagara Haldimand Brant,2024,15–24,174000,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Hamilton Niagara Haldimand Brant,2024,25–44,377000,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Hamilton Niagara Haldimand Brant,2024,45–64,377000,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Hamilton Niagara Haldimand Brant,2024,65–74,159500,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Hamilton Niagara Haldimand Brant,2024,75–84,87000,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Hamilton Niagara Haldimand Brant,2024,85+,43500,Hamilton Niagara Haldimand Brant,43.1,-79.2
+Central West,2024,0–14,136000,Central West,43.7,-79.9
+Central West,2024,15–24,102000,Central West,43.7,-79.9
+Central West,2024,25–44,221000,Central West,43.7,-79.9
+Central West,2024,45–64,221000,Central West,43.7,-79.9
+Central West,2024,65–74,93500,Central West,43.7,-79.9
+Central West,2024,75–84,51000,Central West,43.7,-79.9
+Central West,2024,85+,25500,Central West,43.7,-79.9
+Mississauga Halton,2024,0–14,216000,Mississauga Halton,43.5,-79.6
+Mississauga Halton,2024,15–24,162000,Mississauga Halton,43.5,-79.6
+Mississauga Halton,2024,25–44,351000,Mississauga Halton,43.5,-79.6
+Mississauga Halton,2024,45–64,351000,Mississauga Halton,43.5,-79.6
+Mississauga Halton,2024,65–74,148500,Mississauga Halton,43.5,-79.6
+Mississauga Halton,2024,75–84,81000,Mississauga Halton,43.5,-79.6
+Mississauga Halton,2024,85+,40500,Mississauga Halton,43.5,-79.6
+Toronto Central,2024,0–14,264000,Toronto Central,43.65,-79.38
+Toronto Central,2024,15–24,198000,Toronto Central,43.65,-79.38
+Toronto Central,2024,25–44,429000,Toronto Central,43.65,-79.38
+Toronto Central,2024,45–64,429000,Toronto Central,43.65,-79.38
+Toronto Central,2024,65–74,181500,Toronto Central,43.65,-79.38
+Toronto Central,2024,75–84,99000,Toronto Central,43.65,-79.38
+Toronto Central,2024,85+,49500,Toronto Central,43.65,-79.38
+Central,2024,0–14,280000,Central,44.0,-79.4
+Central,2024,15–24,210000,Central,44.0,-79.4
+Central,2024,25–44,455000,Central,44.0,-79.4
+Central,2024,45–64,455000,Central,44.0,-79.4
+Central,2024,65–74,192500,Central,44.0,-79.4
+Central,2024,75–84,105000,Central,44.0,-79.4
+Central,2024,85+,52500,Central,44.0,-79.4
+Central East,2024,0–14,248000,Central East,44.2,-78.8
+Central East,2024,15–24,186000,Central East,44.2,-78.8
+Central East,2024,25–44,403000,Central East,44.2,-78.8
+Central East,2024,45–64,403000,Central East,44.2,-78.8
+Central East,2024,65–74,170500,Central East,44.2,-78.8
+Central East,2024,75–84,93000,Central East,44.2,-78.8
+Central East,2024,85+,46500,Central East,44.2,-78.8
+South East,2024,0–14,80000,South East,44.4,-76.5
+South East,2024,15–24,60000,South East,44.4,-76.5
+South East,2024,25–44,130000,South East,44.4,-76.5
+South East,2024,45–64,130000,South East,44.4,-76.5
+South East,2024,65–74,55000,South East,44.4,-76.5
+South East,2024,75–84,30000,South East,44.4,-76.5
+South East,2024,85+,15000,South East,44.4,-76.5
+Champlain,2024,0–14,216000,Champlain,45.4,-75.7
+Champlain,2024,15–24,162000,Champlain,45.4,-75.7
+Champlain,2024,25–44,351000,Champlain,45.4,-75.7
+Champlain,2024,45–64,351000,Champlain,45.4,-75.7
+Champlain,2024,65–74,148500,Champlain,45.4,-75.7
+Champlain,2024,75–84,81000,Champlain,45.4,-75.7
+Champlain,2024,85+,40500,Champlain,45.4,-75.7
+North Simcoe Muskoka,2024,0–14,76000,North Simcoe Muskoka,44.5,-79.6
+North Simcoe Muskoka,2024,15–24,57000,North Simcoe Muskoka,44.5,-79.6
+North Simcoe Muskoka,2024,25–44,123500,North Simcoe Muskoka,44.5,-79.6
+North Simcoe Muskoka,2024,45–64,123500,North Simcoe Muskoka,44.5,-79.6
+North Simcoe Muskoka,2024,65–74,52250,North Simcoe Muskoka,44.5,-79.6
+North Simcoe Muskoka,2024,75–84,28500,North Simcoe Muskoka,44.5,-79.6
+North Simcoe Muskoka,2024,85+,14250,North Simcoe Muskoka,44.5,-79.6
+North East,2024,0–14,88000,North East,47.0,-81.0
+North East,2024,15–24,66000,North East,47.0,-81.0
+North East,2024,25–44,143000,North East,47.0,-81.0
+North East,2024,45–64,143000,North East,47.0,-81.0
+North East,2024,65–74,60500,North East,47.0,-81.0
+North East,2024,75–84,33000,North East,47.0,-81.0
+North East,2024,85+,16500,North East,47.0,-81.0
+North West,2024,0–14,12000,North West,49.0,-89.0
+North West,2024,15–24,9000,North West,49.0,-89.0
+North West,2024,25–44,19500,North West,49.0,-89.0
+North West,2024,45–64,19500,North West,49.0,-89.0
+North West,2024,65–74,8250,North West,49.0,-89.0
+North West,2024,75–84,4500,North West,49.0,-89.0
+North West,2024,85+,2250,North West,49.0,-89.0
